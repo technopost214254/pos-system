@@ -1,20 +1,29 @@
-import { useForm, Link } from '@inertiajs/react';
+import { useForm, Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import FormField from '@/Components/FormField';
 import Card from '@/Components/Card';
 
 export default function Create({ outlets = [] }) {
-    const { data, setData, post, errors, processing } = useForm({
-        name: '', price: '', stock: '', sku: '', description: '', outlet_id: ''
+    const { data, setData, post, errors, processing, reset } = useForm({
+        name: '', price: '', stock: '', sku: '', description: '', outlet_id: '', image: null, imagePreview: null
     });
 
     const submit = (e) => {
         e.preventDefault();
-        post('/products');
+        post('/products', { forceFormData: true });
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setData('image', file);
+        setData('imagePreview', URL.createObjectURL(file));
     };
 
     return (
         <AppLayout>
+            <Head title="Create Products" />
+
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Add New Product</h1>
@@ -57,6 +66,26 @@ export default function Create({ outlets = [] }) {
                             error={errors.stock}
                             placeholder="Enter stock quantity"
                         />
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={handleImageChange}
+                                className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100"
+                            />
+                            {errors.image && <p className="text-red-500 text-sm mt-2">{errors.image}</p>}
+                            {data.imagePreview && (
+                                <div className="mt-3">
+                                    <img
+                                        src={data.imagePreview}
+                                        alt="Preview"
+                                        className="h-32 w-32 object-cover rounded-lg border border-gray-200"
+                                    />
+                                </div>
+                            )}
+                        </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Outlet *</label>

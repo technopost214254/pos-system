@@ -39,6 +39,7 @@ Route::middleware('auth:pos')->group(function () {
         Route::get('/customers/search/list', [CustomerController::class, 'search'])->name('customers.search');
         Route::resource('customers', CustomerController::class);
         Route::resource('orders', OrderController::class)->except(['create','store','edit']);
+        Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
         Route::get('/offers/available/list', [OfferController::class, 'getAvailableOffers'])->name('offers.available');
 
         Route::prefix('cart')->name('cart.')->group(function () {

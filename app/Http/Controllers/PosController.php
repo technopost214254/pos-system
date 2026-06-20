@@ -55,6 +55,8 @@ class PosController extends Controller
                     'qty' => $item->quantity,
                     'subtotal' => (float) $item->subtotal,
                     'stock' => $item->product->stock,
+                    'image' => $item->product->image,
+                    'image_url' => $item->product->image_url,
                 ];
             })->values()->all();
         }
@@ -70,7 +72,7 @@ class PosController extends Controller
         }
 
         return Inertia::render('Pos/Index', [
-            'products' => $productQuery->get(),
+            'products' => $productQuery->get(['id','name','price','stock','sku','image']),
             'customers' => $customerQuery->get(),
             'offers' => $offers,
             'cart' => $cartItems,

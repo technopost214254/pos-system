@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import Card from '@/Components/Card';
 import Badge from '@/Components/Badge';
@@ -95,6 +95,8 @@ export default function PaymentPage() {
 
     return (
         <AppLayout>
+            <Head title="Payment Confirmation" />
+            
             <div className="max-w-2xl mx-auto space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Order Confirmation</h1>

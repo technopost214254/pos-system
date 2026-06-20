@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Head } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import CustomerSelect from '@/Components/CustomerSelect';
@@ -201,6 +202,8 @@ export default function PosIndex({ products, customers: initialCustomers, offers
 
     return (
         <AppLayout>
+            <Head title="Point of Sale" />
+
             <div className="flex h-[calc(100vh-140px)] gap-6">
                 {/* Products Grid */}
                 <div className="flex-1 flex flex-col bg-white rounded-lg shadow border border-gray-200">
@@ -215,13 +218,31 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                                     onClick={() => addToCart(p)}
                                     className="bg-gradient-to-br from-slate-50 to-slate-100 border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md hover:scale-105 transition-all group"
                                 >
-                                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition">{p.name}</h3>
-                                    <div className="mt-2 flex justify-between items-end">
-                                        <div>
-                                            <p className="text-gray-600 text-sm">Stock: {p.stock}</p>
-                                            <p className="text-blue-600 font-bold text-lg mt-1">₹{p.price}</p>
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0">
+                                            {p.image ? (
+                                                <img
+                                                    src={`/storage/${p.image}`}
+                                                    alt={p.name}
+                                                    className="h-16 w-16 object-cover rounded-lg border border-gray-200"
+                                                />
+                                            ) : (
+                                                <div className="h-16 w-16 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center text-2xl">
+                                                    📦
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="text-2xl opacity-0 group-hover:opacity-100 transition">➕</div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition truncate">{p.name}</h3>
+                                            <p className="text-gray-600 text-xs mt-1">SKU: {p.sku}</p>
+                                            <div className="mt-2 flex justify-between items-end">
+                                                <div>
+                                                    <p className="text-gray-600 text-xs">Stock: {p.stock}</p>
+                                                    <p className="text-blue-600 font-bold text-lg mt-1">₹{p.price}</p>
+                                                </div>
+                                                <div className="text-2xl opacity-0 group-hover:opacity-100 transition">➕</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

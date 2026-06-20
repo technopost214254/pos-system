@@ -21,7 +21,7 @@ class OrderController extends Controller
         }
 
         return Inertia::render('Orders/Index', [
-            'orders' => $query->latest()->paginate(10)
+            'orders' => $query->latest()->paginate(15)
         ]);
     }
 
@@ -33,8 +33,20 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load('items.product', 'user', 'customer');
+        $order->load('items.product', 'user', 'customer', 'outlet', 'offer');
         return Inertia::render('Orders/Show', compact('order'));
+    }
+
+    public function invoice(Request $request, Order $order) {
+        $user = $request->user();
+        $outletId = $user->outlet_id;
+
+        if ($outletId && $order->outlet_id !== $outletId) {
+            abort(403);
+        }
+
+        $order->load('items.product', 'user', 'customer', 'outlet', 'offer');
+        return Inertia::render('Orders/Invoice', compact('order'));
     }
 
     public function update(Request $request, Order $order) {

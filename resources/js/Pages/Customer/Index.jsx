@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router, usePage, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
@@ -54,6 +54,8 @@ export default function CustomerIndex({ customers }) {
 
     return (
         <AppLayout>
+            <Head title="Customers" />
+
             <PageHeader
                 title="Customers"
                 description="Manage your customer database"

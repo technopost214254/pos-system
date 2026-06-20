@@ -1,4 +1,4 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link, useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import FormField from '@/Components/FormField';
 import Card from '@/Components/Card';
@@ -19,6 +19,8 @@ export default function CustomerCreate({ outlets = [] }) {
 
     return (
         <AppLayout>
+            <Head title="Create Customers" />
+
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Add New Customer</h1>

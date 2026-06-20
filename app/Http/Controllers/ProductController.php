@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Outlet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -39,11 +40,15 @@ class ProductController extends Controller
             'sku'   => 'required|unique:products',
             'description' => 'nullable|string',
             'outlet_id' => 'nullable|exists:outlets,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data['user_id'] = $user->id;
-        // Agents are pinned to their own outlet; an admin chooses the outlet on the form.
         $data['outlet_id'] = $user->outlet_id ?: ($data['outlet_id'] ?? null);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
 
         Product::create($data);
 
@@ -90,7 +95,15 @@ class ProductController extends Controller
             'sku'   => 'required|unique:products,sku,'.$product->id,
             'description' => 'nullable|string',
             'outlet_id' => 'nullable|exists:outlets,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
 
         // Agents keep their own outlet; an admin may reassign via the form.
         if ($outletId) {

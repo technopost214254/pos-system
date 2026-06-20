@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
@@ -68,6 +68,8 @@ export default function OffersIndex({ offers }) {
 
     return (
         <AppLayout>
+            <Head title="Offers & Discounts" />
+            
             <PageHeader
                 title="Offers & Discounts"
                 description="Manage promotional offers"

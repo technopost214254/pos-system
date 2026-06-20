@@ -21,7 +21,7 @@ export default function Edit({ outlet }) {
 
     return (
         <AppLayout>
-            <Head title="Edit Outlet" />
+            <Head title={`Edit Outlet - ${outlet.name}`} />
             <PageHeader title="Edit Outlet" description={`Update ${outlet.name}`} />
 
             <form onSubmit={submit} className="max-w-2xl bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">

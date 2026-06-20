@@ -1,4 +1,4 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link, useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import FormField from '@/Components/FormField';
 import Card from '@/Components/Card';
@@ -18,6 +18,8 @@ export default function CustomerEdit({ customer }) {
 
     return (
         <AppLayout>
+            <Head title={`Edit Customers - ${customer.name}`} />
+
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Edit Customer</h1>

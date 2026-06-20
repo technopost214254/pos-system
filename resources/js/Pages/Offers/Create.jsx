@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Link } from '@inertiajs/react';
+import { Link, Head } from '@inertiajs/react';
 
 export default function CreateOffer({ products }) {
     const [formData, setFormData] = useState({
@@ -40,6 +40,8 @@ export default function CreateOffer({ products }) {
 
     return (
         <AppLayout>
+            <Head title="Create Offer" />
+            
             <div className="max-w-2xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold">Create Offer</h1>

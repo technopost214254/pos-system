@@ -1,9 +1,11 @@
-import { Link } from '@inertiajs/react';
+import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 
 export default function CustomerShow({ customer }) {
     return (
         <AppLayout>
+            <Head title={`Customers - ${customer.name}`} />
+
             <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="mb-6 flex justify-between items-center">
                     <h1 className="text-3xl font-bold text-gray-900">{customer.name}</h1>

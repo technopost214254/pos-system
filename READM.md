@@ -25,6 +25,15 @@ A multi-outlet Point of Sale (POS) application built with Laravel and React, fea
 - **Offers & Discounts** — Fixed, percentage, and BOGO-style offers with date ranges
 - **Dashboard** — Stats overview scoped to the user's outlet
 
+## Images
+
+![Dashboard](./images/Dashboard.png)
+
+![POS Terminal](./images/POS.png)
+
+![Products](./images/Products.png)
+
+
 ## User Roles
 
 | Role | Access |

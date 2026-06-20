@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router, usePage, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
@@ -37,6 +37,8 @@ export default function Index({ products }) {
 
     return (
         <AppLayout>
+            <Head title="Products" />
+
             <PageHeader
                 title="Products"
                 description="Manage your product inventory"

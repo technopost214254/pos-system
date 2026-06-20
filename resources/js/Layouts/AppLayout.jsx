@@ -9,6 +9,7 @@ const adminNav = [
     { href: '/orders', label: 'Orders', icon: '📋' },
     { href: '/users', label: 'Users', icon: '👤' },
     { href: '/outlets', label: 'Outlets', icon: '🏪' },
+    { href: '/offers', label: 'Offers', icon: '🎁' },
 ];
 
 // POS agents are restricted to the terminal and their outlet's orders/customers.

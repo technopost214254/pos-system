@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     protected $fillable = ['name', 'description', 'price', 'stock', 'sku', 'image', 'user_id', 'outlet_id'];
+    protected $appends = ['image_url'];
 
     public function user()
     {
@@ -28,5 +29,10 @@ class Product extends Model
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/'.$this->image) : null;
     }
 }
