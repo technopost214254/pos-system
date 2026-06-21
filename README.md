@@ -184,6 +184,24 @@ database/
 6. **Terminal Operations** — Select products, build cart, apply offers, checkout
 7. **Order Processing** — Orders are created asynchronously via `ProcessOrderJob`
 
+## 📞 Need Customization?
+
+This POS system is built to be flexible, but every business has unique needs. If you require:
+
+- Custom features or modifications to the POS terminal
+- Integration with third-party services or APIs
+- UI/UX changes tailored to your workflow
+- Additional reporting or analytics
+- Dedicated support or deployment assistance
+
+**Reach out to discuss your requirements.**
+
+> **📧 Email:** vickyraj214254@gmail.com
+
+I will get back to you to understand your needs and provide a solution.
+
+---
+
 ## License
 
 MIT
