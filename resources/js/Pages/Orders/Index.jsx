@@ -1,11 +1,22 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
+import { useState } from 'react';
 
 export default function Index({ orders }) {
+    const [confirmDelete, setConfirmDelete] = useState(null);
     const isAdmin = usePage().props.auth?.is_admin;
+
+    const handleDelete = (id) => {
+        if (confirmDelete === id) {
+            router.delete(`/orders/${id}`);
+            setConfirmDelete(null);
+        } else {
+            setConfirmDelete(id);
+        }
+    };
 
     const statusVariants = {
         pending: 'yellow',
@@ -41,13 +52,23 @@ export default function Index({ orders }) {
                 data={orders.data}
                 links={orders.links}
                 actions={(row) => (
-                    <div className="flex gap-2">
+                    <div className="space-x-3 flex justify-end">
                         <Link href={`/orders/${row.id}`} className="text-blue-600 hover:text-blue-800 font-medium text-sm">
                             View
                         </Link>
                         <Link href={`/orders/${row.id}/invoice`} className="text-gray-700 hover:text-gray-900 font-medium text-sm">
                             🖨️ Print
                         </Link>
+                        <button
+                            onClick={() => handleDelete(row.id)}
+                            className={`font-medium text-sm transition-colors ${
+                                confirmDelete === row.id
+                                    ? 'bg-red-600 text-white px-2 py-1 rounded'
+                                    : 'text-red-600 hover:text-red-800'
+                            }`}
+                        >
+                            {confirmDelete === row.id ? 'Confirm' : 'Delete'}
+                        </button>
                     </div>
                 )}
             />

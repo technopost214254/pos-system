@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\Outlet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,13 +21,14 @@ class ProductController extends Controller
         }
 
         return Inertia::render('Products/Index', [
-            'products' => $query->with('outlet')->latest()->paginate(10)
+            'products' => $query->with(['outlet', 'category'])->latest()->paginate(10)
         ]);
     }
 
     public function create(Request $request) {
         return Inertia::render('Products/Create', [
             'outlets' => Outlet::where('user_id', $request->user()->id)->get(['id', 'name']),
+            'categories' => Category::where('user_id', $request->user()->id)->get(['id', 'name']),
         ]);
     }
 
@@ -40,6 +42,7 @@ class ProductController extends Controller
             'sku'   => 'required|unique:products',
             'description' => 'nullable|string',
             'outlet_id' => 'nullable|exists:outlets,id',
+            'category_id' => 'nullable|exists:categories,id',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -77,6 +80,7 @@ class ProductController extends Controller
         return Inertia::render('Products/Edit', [
             'product' => $product,
             'outlets' => Outlet::where('user_id', $user->id)->get(['id', 'name']),
+            'categories' => Category::where('user_id', $user->id)->get(['id', 'name']),
         ]);
     }
 
@@ -95,6 +99,7 @@ class ProductController extends Controller
             'sku'   => 'required|unique:products,sku,'.$product->id,
             'description' => 'nullable|string',
             'outlet_id' => 'nullable|exists:outlets,id',
+            'category_id' => 'nullable|exists:categories,id',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 

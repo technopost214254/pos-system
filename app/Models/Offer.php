@@ -56,29 +56,11 @@ class Offer extends Model
             return ($this->getCartTotal($cartItems) * $this->value) / 100;
         }
 
-        if ($this->type === 'bogo') {
-            return $this->calculateBogoDiscount($cartItems);
-        }
-
         return 0;
     }
 
     private function getCartTotal($cartItems)
     {
         return array_sum(array_map(fn($item) => $item['subtotal'], $cartItems));
-    }
-
-    private function calculateBogoDiscount($cartItems)
-    {
-        $discount = 0;
-
-        foreach ($cartItems as $item) {
-            if ($this->product_id && $item['id'] !== $this->product_id) continue;
-
-            $freeItems = intdiv($item['qty'], $this->buy_quantity) * $this->get_quantity;
-            $discount += $freeItems * $item['price'];
-        }
-
-        return $discount;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Offer;
 use App\Models\Cart;
@@ -61,7 +62,7 @@ class PosController extends Controller
             })->values()->all();
         }
 
-        $productQuery = Product::where('stock', '>', 0);
+        $productQuery = Product::where('stock', '>', 0)->with('category');
         if ($outletId) {
             $productQuery->where('outlet_id', $outletId);
         }
@@ -71,11 +72,15 @@ class PosController extends Controller
             $customerQuery->where('outlet_id', $outletId);
         }
 
+        $categories = Category::when($user->can_access_pos, fn($q) => $q->where('user_id', $user->id))
+            ->orderBy('name')->get(['id', 'name']);
+
         return Inertia::render('Pos/Index', [
-            'products' => $productQuery->get(['id','name','price','stock','sku','image']),
+            'products' => $productQuery->get(['id','name','price','stock','sku','image','category_id']),
             'customers' => $customerQuery->get(),
             'offers' => $offers,
             'cart' => $cartItems,
+            'categories' => $categories,
         ]);
     }
 

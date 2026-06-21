@@ -30,9 +30,6 @@ export default function CreateOffer({ products }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         const payload = { ...formData };
-        if (payload.type === 'bogo') {
-            delete payload.value;
-        }
         router.post('/offers', payload, {
             onError: (errors) => setErrors(errors)
         });
@@ -87,7 +84,6 @@ export default function CreateOffer({ products }) {
                             >
                                 <option value="percentage">Percentage Discount</option>
                                 <option value="fixed">Flat Discount</option>
-                                <option value="bogo">Buy One Get One</option>
                             </select>
                         </div>
 
@@ -109,32 +105,7 @@ export default function CreateOffer({ products }) {
                             </div>
                         )}
 
-                        {formData.type === 'bogo' && (
-                            <>
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1">Buy Quantity *</label>
-                                    <input
-                                        type="number"
-                                        name="buy_quantity"
-                                        value={formData.buy_quantity}
-                                        onChange={handleChange}
-                                        min="1"
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1">Get Quantity (Free) *</label>
-                                    <input
-                                        type="number"
-                                        name="get_quantity"
-                                        value={formData.get_quantity}
-                                        onChange={handleChange}
-                                        min="1"
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </>
-                        )}
+
 
                         <div>
                             <label className="block text-sm font-semibold mb-1">Apply To (Leave empty for all products)</label>

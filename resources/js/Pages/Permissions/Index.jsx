@@ -1,23 +1,45 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
+import { useState } from 'react';
 
 export default function Index({ permissions }) {
+    const [confirmDelete, setConfirmDelete] = useState(null);
+
+    const handleDelete = (id) => {
+        if (confirmDelete === id) {
+            router.delete(`/permissions/${id}`);
+            setConfirmDelete(null);
+        } else {
+            setConfirmDelete(id);
+        }
+    };
+
     const columns = [
         { key: 'name', label: 'Permission' },
         { key: 'slug', label: 'Slug', align: 'center' },
     ];
 
     const actions = (row) => (
-        <>
+        <div className="space-x-3 flex justify-end">
             <Link
-                href={`/admin/permissions/${row.id}/edit`}
+                href={`/permissions/${row.id}/edit`}
                 className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
             >
                 Edit
             </Link>
-        </>
+            <button
+                onClick={() => handleDelete(row.id)}
+                className={`font-medium text-sm transition-colors ${
+                    confirmDelete === row.id
+                        ? 'bg-red-600 text-white px-2 py-1 rounded'
+                        : 'text-red-600 hover:text-red-800'
+                }`}
+            >
+                {confirmDelete === row.id ? 'Confirm' : 'Delete'}
+            </button>
+        </div>
     );
 
     return (
@@ -26,7 +48,7 @@ export default function Index({ permissions }) {
                 title="Permissions"
                 description="Manage permissions"
                 actionLabel="+ Add Permission"
-                actionHref="/admin/permissions/create"
+                actionHref="/permissions/create"
             />
             <DataTable columns={columns} data={permissions.data} actions={actions} links={permissions.links} />
         </AppLayout>

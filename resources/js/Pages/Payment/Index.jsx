@@ -49,25 +49,22 @@ export default function PaymentPage() {
 
         const offer = JSON.parse(offerData);
 
+        const getQualifyingSubtotal = () => {
+            if (offer.product_id) {
+                const item = cart.find(i => i.id === offer.product_id);
+                return item ? parseFloat(item.subtotal || item.qty * parseFloat(item.price)) : 0;
+            }
+            return subtotal;
+        };
+
+        const qualifyingSubtotal = getQualifyingSubtotal();
+
         if (offer.type === 'fixed') {
-            return Math.min(offer.value, subtotal);
+            return Math.min(offer.value, qualifyingSubtotal);
         }
 
         if (offer.type === 'percentage') {
-            return (subtotal * offer.value) / 100;
-        }
-
-        if (offer.type === 'bogo') {
-            let disc = 0;
-            for (const item of cart) {
-                if (offer.product_id && item.id !== offer.product_id) continue;
-                const groupSize = offer.buy_quantity + offer.get_quantity;
-                const groups = Math.floor(item.qty / groupSize);
-                const remainder = item.qty % groupSize;
-                const freeItems = groups * offer.get_quantity + Math.max(0, remainder - offer.buy_quantity);
-                disc += freeItems * parseFloat(item.price);
-            }
-            return disc;
+            return (qualifyingSubtotal * offer.value) / 100;
         }
 
         return 0;

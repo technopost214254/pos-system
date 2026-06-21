@@ -39,7 +39,7 @@ export default function Create({ permissions, outlets }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.post('/admin/roles', formData, {
+        router.post('/roles', formData, {
             onError: (errs) => setErrors(errs),
         });
     };
@@ -49,7 +49,7 @@ export default function Create({ permissions, outlets }) {
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold text-gray-900">Create Role</h1>
-                    <SecondaryButton href="/admin/roles">Cancel</SecondaryButton>
+                    <SecondaryButton href="/roles">Cancel</SecondaryButton>
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">

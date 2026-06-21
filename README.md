@@ -22,7 +22,7 @@ A multi-outlet Point of Sale (POS) application built with Laravel and React, fea
 - **Order Management** — Order history, status updates, and cancellation
 - **Product Management** — CRUD for products with stock tracking
 - **Customer Management** — Customer profiles linked to orders
-- **Offers & Discounts** — Fixed, percentage, and BOGO-style offers with date ranges
+- **Offers & Discounts** — Fixed and percentage offers with date ranges
 - **Dashboard** — Stats overview scoped to the user's outlet
 
 ## Images
@@ -33,6 +33,7 @@ A multi-outlet Point of Sale (POS) application built with Laravel and React, fea
 
 ![Products](./images/Products.png)
 
+![POS Terminal Full](./images/fullscreen.png)
 
 ## User Roles
 
@@ -54,7 +55,7 @@ Core tables:
 - `customers` — Customer records with outlet scoping
 - `carts` / `cart_items` — Per-user POS carts
 - `orders` / `order_items` — Completed transactions
-- `offers` — Discount campaigns (fixed, percentage, BOGO)
+- `offers` — Discount campaigns (fixed, percentage)
 
 ## Prerequisites
 
@@ -79,6 +80,18 @@ php artisan db:seed
 npm install --ignore-scripts
 npm run build
 ```
+
+### Default Admin Login
+
+After installation, you can log in with the default admin credentials:
+
+| Field | Value |
+|-------|-------|
+| URL | `/pos/login` |
+| Email | `admin@example.com` |
+| Password | `admin123` |
+
+> ⚠️ **Change these credentials immediately** after first login.
 
 ## Development
 

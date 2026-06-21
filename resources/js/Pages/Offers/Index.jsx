@@ -21,14 +21,12 @@ export default function OffersIndex({ offers }) {
         return {
             'fixed': 'Flat Discount',
             'percentage': 'Percentage',
-            'bogo': 'Buy One Get One'
         }[type] || type;
     };
 
     const getOfferDisplay = (offer) => {
         if (offer.type === 'fixed') return `₹${offer.value}`;
         if (offer.type === 'percentage') return `${offer.value}%`;
-        if (offer.type === 'bogo') return `Buy ${offer.buy_quantity} Get ${offer.get_quantity}`;
         return '-';
     };
 

@@ -189,8 +189,6 @@ export default function Show({ order }) {
                                         ? `₹${order.offer.value} off`
                                         : order.offer.type === 'percentage'
                                         ? `${order.offer.value}% off`
-                                        : order.offer.type === 'bogo'
-                                        ? `Buy ${order.offer.buy_quantity} Get ${order.offer.get_quantity}`
                                         : order.offer.type}
                                 </p>
                             </div>

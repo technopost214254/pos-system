@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'description', 'price', 'stock', 'sku', 'image', 'user_id', 'outlet_id'];
+    protected $fillable = ['name', 'description', 'price', 'stock', 'sku', 'image', 'user_id', 'outlet_id', 'category_id'];
     protected $appends = ['image_url'];
 
     public function user()
@@ -19,6 +19,11 @@ class Product extends Model
     public function outlet()
     {
         return $this->belongsTo(Outlet::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function orderItems()

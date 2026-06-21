@@ -23,7 +23,7 @@ export default function Create() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.post('/admin/permissions', formData, {
+        router.post('/permissions', formData, {
             onError: (errs) => setErrors(errs),
         });
     };
@@ -33,7 +33,7 @@ export default function Create() {
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold text-gray-900">Create Permission</h1>
-                    <SecondaryButton href="/admin/permissions">Cancel</SecondaryButton>
+                    <SecondaryButton href="/permissions">Cancel</SecondaryButton>
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">

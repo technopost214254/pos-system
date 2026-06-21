@@ -4,6 +4,7 @@ import { useState } from 'react';
 const adminNav = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
     { href: '/pos', label: 'POS Terminal', icon: '🛒' },
+    { href: '/categories', label: 'Categories', icon: '📂' },
     { href: '/products', label: 'Products', icon: '📦' },
     { href: '/customers', label: 'Customers', icon: '👥' },
     { href: '/orders', label: 'Orders', icon: '📋' },

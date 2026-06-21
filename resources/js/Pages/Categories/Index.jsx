@@ -1,15 +1,16 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
+import Badge from '@/Components/Badge';
 import { useState } from 'react';
 
-export default function Index({ roles }) {
+export default function CategoriesIndex({ categories }) {
     const [confirmDelete, setConfirmDelete] = useState(null);
 
     const handleDelete = (id) => {
         if (confirmDelete === id) {
-            router.delete(`/roles/${id}`);
+            router.delete(`/categories/${id}`);
             setConfirmDelete(null);
         } else {
             setConfirmDelete(id);
@@ -17,19 +18,22 @@ export default function Index({ roles }) {
     };
 
     const columns = [
-        { key: 'name', label: 'Role Name' },
+        { key: 'name', label: 'Name' },
+        { key: 'slug', label: 'Slug' },
         {
-            key: 'permissions',
-            label: 'Permissions',
-            render: (val) => (Array.isArray(val) ? val.length + ' permissions' : '0'),
+            key: 'products_count',
+            label: 'Products',
+            align: 'center',
+            render: (val) => <Badge variant="blue" size="sm">{val}</Badge>
         },
+        { key: 'description', label: 'Description', render: (val) => val || '—' },
     ];
 
     const actions = (row) => (
         <div className="space-x-3 flex justify-end">
             <Link
-                href={`/roles/${row.id}/edit`}
-                className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                href={`/categories/${row.id}/edit`}
+                className="text-yellow-600 hover:text-yellow-800 font-medium text-sm transition-colors"
             >
                 Edit
             </Link>
@@ -48,13 +52,14 @@ export default function Index({ roles }) {
 
     return (
         <AppLayout>
+            <Head title="Categories" />
             <PageHeader
-                title="Roles"
-                description="Manage roles and permissions"
-                actionLabel="+ Add Role"
-                actionHref="/roles/create"
+                title="Categories"
+                description="Manage product categories"
+                actionLabel="+ Create Category"
+                actionHref="/categories/create"
             />
-            <DataTable columns={columns} data={roles.data} actions={actions} links={roles.links} />
+            <DataTable columns={columns} data={categories.data} actions={actions} links={categories.links} />
         </AppLayout>
     );
 }

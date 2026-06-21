@@ -2,10 +2,18 @@ import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
+import { useState } from 'react';
 
 export default function Index({ outlets }) {
-    const destroy = (id) => {
-        if (confirm('Delete this outlet?')) router.delete(`/outlets/${id}`);
+    const [confirmDelete, setConfirmDelete] = useState(null);
+
+    const handleDelete = (id) => {
+        if (confirmDelete === id) {
+            router.delete(`/outlets/${id}`);
+            setConfirmDelete(null);
+        } else {
+            setConfirmDelete(id);
+        }
     };
 
     const columns = [
@@ -26,14 +34,21 @@ export default function Index({ outlets }) {
     ];
 
     const actions = (row) => (
-        <>
+        <div className="space-x-3 flex justify-end">
             <Link href={`/outlets/${row.id}/edit`} className="text-indigo-600 hover:text-indigo-800 font-medium text-sm transition-colors">
                 Edit
             </Link>
-            <button onClick={() => destroy(row.id)} className="text-red-600 hover:text-red-800 font-medium text-sm transition-colors">
-                Delete
+            <button
+                onClick={() => handleDelete(row.id)}
+                className={`font-medium text-sm transition-colors ${
+                    confirmDelete === row.id
+                        ? 'bg-red-600 text-white px-2 py-1 rounded'
+                        : 'text-red-600 hover:text-red-800'
+                }`}
+            >
+                {confirmDelete === row.id ? 'Confirm' : 'Delete'}
             </button>
-        </>
+        </div>
     );
 
     return (
