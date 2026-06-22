@@ -164,27 +164,27 @@ export default function CustomerSelect({ customers, selectedCustomer, onSelectCu
                                         placeholder="Customer Name"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="border w-full p-2 rounded text-sm"
+                                        className="border w-full p-2 rounded text-sm text-gray-700"
                                     />
                                     <input
                                         type="tel"
                                         placeholder="Phone"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="border w-full p-2 rounded text-sm"
+                                        className="border w-full p-2 rounded text-sm text-gray-700"
                                     />
                                     <input
                                         type="email"
                                         placeholder="Email (optional)"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="border w-full p-2 rounded text-sm"
+                                        className="border w-full p-2 rounded text-sm text-gray-700"
                                     />
                                     <textarea
                                         placeholder="Address (optional)"
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        className="border w-full p-2 rounded text-sm resize-none"
+                                        className="border w-full p-2 rounded text-sm text-gray-700 resize-none"
                                         rows="2"
                                     />
                                     <div className="flex gap-2 pt-2">

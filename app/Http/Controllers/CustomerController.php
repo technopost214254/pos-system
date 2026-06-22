@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Outlet;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
@@ -137,7 +138,11 @@ class CustomerController extends Controller
             abort(403);
         }
 
-        $customer->delete();
+        try {
+            $customer->delete();
+        } catch (QueryException $e) {
+            return redirect()->route('customers.index')->with('error', 'Cannot delete this customer because they have associated orders.');
+        }
 
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
     }

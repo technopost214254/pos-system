@@ -72,6 +72,28 @@ class OrderController extends Controller
         return back()->with('success', 'Order status updated.');
     }
 
+    public function invoices(Request $request) {
+        $user = $request->user();
+        $outletId = $user->outlet_id;
+        $search = $request->input('search');
+
+        $query = Order::with('items.product', 'customer', 'outlet')->where('status', 'completed');
+        if ($outletId) {
+            $query->where('outlet_id', $outletId);
+        }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('customer', fn($cq) => $cq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        return Inertia::render('Invoices/Index', [
+            'orders' => $query->latest()->paginate(15),
+            'filters' => ['search' => $search],
+        ]);
+    }
+
     public function destroy(Request $request, Order $order) {
         $user = $request->user();
         $outletId = $user->outlet_id;

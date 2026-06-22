@@ -3,13 +3,33 @@ import { useState } from 'react';
 
 const adminNav = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/categories', label: 'Categories', icon: '📂' },
-    { href: '/products', label: 'Products', icon: '📦' },
+    {
+        label: 'Catalog',
+        icon: '📁',
+        children: [
+            { href: '/products', label: 'Products', icon: '📦' },
+            { href: '/categories', label: 'Categories', icon: '📂' },
+        ],
+    },
+    {
+        label: 'Sales',
+        icon: '💰',
+        children: [
+            { href: '/orders', label: 'Orders', icon: '📋' },
+            { href: '/invoices', label: 'Invoices', icon: '🧾' },
+        ],
+    },
     { href: '/customers', label: 'Customers', icon: '👥' },
-    { href: '/orders', label: 'Orders', icon: '📋' },
-    { href: '/users', label: 'Users', icon: '👤' },
-    { href: '/outlets', label: 'Outlets', icon: '🏪' },
-    { href: '/offers', label: 'Offers', icon: '🎁' },
+    { 
+        href: '/settings', 
+        label: 'Settings', 
+        icon: '⚙️',
+        children: [
+            { href: '/users', label: 'Users', icon: '👤' },
+            { href: '/outlets', label: 'Outlets', icon: '🏪' },
+            { href: '/offers', label: 'Offers', icon: '🎁' },
+        ],
+    },
 ];
 
 // POS agents are restricted to the terminal and their outlet's orders/customers.
@@ -18,6 +38,73 @@ const agentNav = [
     { href: '/orders', label: 'Orders', icon: '📋' },
     { href: '/customers', label: 'Customers', icon: '👥' },
 ];
+
+function CatalogSection({ item, sidebarOpen, isActive }) {
+    const [open, setOpen] = useState(true);
+    const childActive = item.children.some((c) => isActive(c.href));
+
+    if (!sidebarOpen) {
+        return (
+            <div className="space-y-1">
+                <div className="flex items-center justify-center px-3 py-2.5 text-slate-400 text-lg">
+                    <span>{item.icon}</span>
+                </div>
+                {item.children.map((child) => (
+                    <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`flex items-center justify-center px-3 py-2.5 rounded-lg transition-colors ${
+                            isActive(child.href)
+                                ? 'bg-indigo-600 text-white shadow-sm'
+                                : 'text-slate-300 hover:bg-slate-700/70 hover:text-white'
+                        }`}
+                        title={child.label}
+                    >
+                        <span className="text-lg">{child.icon}</span>
+                    </Link>
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <button
+                onClick={() => setOpen(!open)}
+                className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                    childActive
+                        ? 'bg-white/10 text-white'
+                        : 'text-slate-400 hover:bg-slate-700/70 hover:text-white'
+                }`}
+            >
+                <div className="flex items-center gap-3">
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.label}</span>
+                </div>
+                <span className={`text-xs transition-transform ${open ? 'rotate-90' : ''}`}>▶</span>
+            </button>
+            {open && (
+                <div className="ml-4 mt-1 space-y-1 border-l border-slate-700/40 pl-2">
+                    {item.children.map((child) => (
+                        <Link
+                            key={child.href}
+                            href={child.href}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                                isActive(child.href)
+                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                    : 'text-slate-300 hover:bg-slate-700/70 hover:text-white'
+                            }`}
+                            title={child.label}
+                        >
+                            <span className="text-base">{child.icon}</span>
+                            <span className="text-sm">{child.label}</span>
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function AppLayout({ children }) {
     const page = usePage();
@@ -54,21 +141,30 @@ export default function AppLayout({ children }) {
                 </div>
 
                 <nav className="p-3 space-y-1 flex-1 overflow-y-auto">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                                isActive(item.href)
-                                    ? 'bg-indigo-600 text-white shadow-sm'
-                                    : 'text-slate-300 hover:bg-slate-700/70 hover:text-white'
-                            }`}
-                            title={item.label}
-                        >
-                            <span className="text-lg">{item.icon}</span>
-                            {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
-                        </Link>
-                    ))}
+                    {navItems.map((item) =>
+                        item.children ? (
+                            <CatalogSection
+                                key={item.label}
+                                item={item}
+                                sidebarOpen={sidebarOpen}
+                                isActive={isActive}
+                            />
+                        ) : (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                                    isActive(item.href)
+                                        ? 'bg-indigo-600 text-white shadow-sm'
+                                        : 'text-slate-300 hover:bg-slate-700/70 hover:text-white'
+                                }`}
+                                title={item.label}
+                            >
+                                <span className="text-lg">{item.icon}</span>
+                                {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                            </Link>
+                        )
+                    )}
                 </nav>
 
                 {sidebarOpen && (

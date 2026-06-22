@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -105,7 +106,11 @@ class UserController extends Controller
             return redirect()->route('users.index')->with('error', 'Cannot delete yourself.');
         }
 
-        $user->delete();
+        try {
+            $user->delete();
+        } catch (QueryException $e) {
+            return redirect()->route('users.index')->with('error', 'Cannot delete this user because they have associated orders. Disable them instead.');
+        }
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }

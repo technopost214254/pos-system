@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Outlet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -127,6 +128,23 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Product updated.');
     }
 
+    public function findBySku(Request $request, $sku)
+    {
+        $user = $request->user();
+        $outletId = $user->outlet_id;
+
+        $product = Product::with('category')
+            ->where('sku', $sku)
+            ->when($outletId, fn($q) => $q->where('outlet_id', $outletId))
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        return response()->json($product);
+    }
+
     public function destroy(Request $request, Product $product) {
         $user = $request->user();
         $outletId = $user->outlet_id;
@@ -135,7 +153,12 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $product->delete();
+        try {
+            $product->delete();
+        } catch (QueryException $e) {
+            return redirect()->route('products.index')->with('error', 'Cannot delete this product because it is referenced in orders or carts.');
+        }
+
         return redirect()->route('products.index')->with('success', 'Product deleted.');
     }
 }

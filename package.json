@@ -16,6 +16,7 @@
     "dependencies": {
         "@headlessui/react": "^2.2.10",
         "@inertiajs/react": "^2.0.0",
+        "jsbarcode": "^3.12.3",
         "react": "^18.3.0",
         "react-dom": "^18.3.0",
         "ziggy-js": "^2.6.2"

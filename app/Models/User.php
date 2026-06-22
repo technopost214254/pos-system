@@ -36,28 +36,4 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Outlet::class);
     }
-
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'role_user');
-    }
-
-    public function permissions()
-    {
-        return $this->belongsToMany(Permission::class, 'permission_role');
-    }
-
-    public function hasRole(string $slug): bool
-    {
-        return $this->roles()->where('slug', $slug)->exists();
-    }
-
-    public function hasPermission(string $slug): bool
-    {
-        return $this->roles()
-            ->whereHas('permissions', function ($q) use ($slug) {
-                $q->where('slug', $slug);
-            })
-            ->exists();
-    }
 }

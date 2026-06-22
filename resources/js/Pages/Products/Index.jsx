@@ -2,6 +2,7 @@ import { Link, router, usePage, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
+import Barcode from '@/Components/Barcode';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Index({ products, filters = {} }) {
@@ -35,6 +36,16 @@ export default function Index({ products, filters = {} }) {
     const columns = [
         { key: 'name', label: 'Product Name' },
         { key: 'sku', label: 'SKU', align: 'center' },
+        {
+            key: 'barcode',
+            label: 'Barcode',
+            align: 'center',
+            render: (_, row) => (
+                <div className="flex justify-center">
+                    <Barcode value={row.sku} width={1.2} height={24} fontSize={9} />
+                </div>
+            ),
+        },
         { key: 'price', label: 'Price', align: 'center', render: (val) => `₹${val}` },
         { key: 'stock', label: 'Stock', align: 'center' },
         { key: 'category', label: 'Category', align: 'center', render: (_, row) => row.category?.name ?? '—' },

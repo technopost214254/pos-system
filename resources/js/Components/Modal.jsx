@@ -11,6 +11,7 @@ export default function Modal({
     maxWidth = '2xl',
     closeable = true,
     onClose = () => {},
+    backdrop = true,
 }) {
     const close = () => {
         if (closeable) {
@@ -31,19 +32,21 @@ export default function Modal({
             <Dialog
                 as="div"
                 id="modal"
-                className="fixed inset-0 z-50 flex transform items-center overflow-y-auto px-4 py-6 transition-all sm:px-0"
+                className="fixed inset-0 z-[99999] flex transform items-center overflow-y-auto px-4 py-6 transition-all sm:px-0"
                 onClose={close}
             >
-                <TransitionChild
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="absolute inset-0 bg-gray-500/75" />
-                </TransitionChild>
+                {backdrop && (
+                    <TransitionChild
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="absolute inset-0 bg-gray-500/75" />
+                    </TransitionChild>
+                )}
 
                 <TransitionChild
                     enter="ease-out duration-300"

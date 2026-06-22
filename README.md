@@ -29,11 +29,14 @@ A multi-outlet Point of Sale (POS) application built with Laravel and React, fea
 
 ![Dashboard](./images/Dashboard.png)
 
-![POS Terminal](./images/POS.png)
+![POS Terminal](./images/Terminal.png)
 
 ![Products](./images/Products.png)
 
 ![POS Terminal Full](./images/fullscreen.png)
+
+![Invoice](./images/Invoice.png)
+
 
 ## User Roles
 

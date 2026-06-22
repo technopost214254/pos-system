@@ -3,6 +3,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import CustomerSelect from '@/Components/CustomerSelect';
+import Modal from '@/Components/Modal';
 
 function formatTime() {
     return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -23,6 +24,10 @@ export default function PosIndex({ products, customers: initialCustomers, offers
     const [fullscreen, setFullscreen] = useState(false);
     const [cartDrawerOpen, setCartDrawerOpen] = useState(true);
     const [autoAppliedOffer, setAutoAppliedOffer] = useState(null);
+    const [skuModalOpen, setSkuModalOpen] = useState(false);
+    const [skuInput, setSkuInput] = useState('');
+    const [skuError, setSkuError] = useState('');
+    const [skuLoading, setSkuLoading] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => setClock(formatTime()), 30000);
@@ -77,7 +82,7 @@ export default function PosIndex({ products, customers: initialCustomers, offers
         } catch { await loadCart(); }
     };
 
-    const addToCart = async (product) => {
+    const addToCart = async (product, event) => {
         const cartData = getCartData();
         const existing = cartData.find(i => i.id === product.id);
         const newQty = existing ? existing.qty + 1 : 1;
@@ -87,6 +92,27 @@ export default function PosIndex({ products, customers: initialCustomers, offers
         setCart(next);
         persistCart(next);
         await syncCartItem(product.id, newQty);
+
+        // Flying animation
+        const btn = event?.currentTarget;
+        if (btn) {
+            const start = btn.getBoundingClientRect();
+            const cartEl = document.querySelector('[data-cart-target]');
+            const end = cartEl?.getBoundingClientRect() || { left: window.innerWidth, top: 0, width: 0, height: 0 };
+            const sX = start.left + start.width / 2;
+            const sY = start.top;
+            const eX = end.left + end.width / 2;
+            const eY = end.top + end.height / 2;
+            const flyer = document.createElement('div');
+            flyer.className = 'fixed pointer-events-none z-[99999]';
+            flyer.style.cssText = `left:${sX}px;top:${sY}px;`;
+            flyer.innerHTML = '<div class="w-10 h-10 bg-blue-600 rounded-full shadow-lg flex items-center justify-center text-white text-lg font-bold -translate-x-1/2 -translate-y-1/2">+</div>';
+            document.body.appendChild(flyer);
+            flyer.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: `translate(${eX - sX}px, ${eY - sY}px) scale(0.3)`, opacity: 0 },
+            ], { duration: 500, easing: 'ease-in-out' }).onfinish = () => flyer.remove();
+        }
     };
 
     const removeFromCart = async (productId) => {
@@ -161,6 +187,41 @@ export default function PosIndex({ products, customers: initialCustomers, offers
 
     const total = subtotal - totalDiscount;
 
+    const handleSkuScan = async () => {
+        const sku = skuInput.trim();
+        if (!sku) return;
+        setSkuLoading(true);
+        setSkuError('');
+
+        const found = products.find(p => p.sku?.toLowerCase() === sku.toLowerCase());
+        if (found) {
+            await addToCart(found);
+            setSkuModalOpen(false);
+            setSkuInput('');
+            setSkuLoading(false);
+            return;
+        }
+
+        try {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+            const res = await fetch(`/products/find-by-sku/${encodeURIComponent(sku)}`, {
+                headers: { 'X-CSRF-TOKEN': csrf },
+            });
+            if (!res.ok) {
+                setSkuError('Product not found with this SKU.');
+                setSkuLoading(false);
+                return;
+            }
+            const product = await res.json();
+            await addToCart(product);
+            setSkuModalOpen(false);
+            setSkuInput('');
+        } catch {
+            setSkuError('Failed to look up product.');
+        }
+        setSkuLoading(false);
+    };
+
     const proceedToPayment = () => {
         if (!cart.length) return alert('Cart is empty!');
         if (!selectedCustomer) return alert('Please select a customer!');
@@ -192,6 +253,16 @@ export default function PosIndex({ products, customers: initialCustomers, offers
         }),
         [products, searchQuery, selectedCategory]
     );
+
+    // Count products per category (from full products array, not filtered)
+    const categoryCounts = useMemo(() => {
+        const counts = {};
+        for (const p of products) {
+            const catId = p.category_id || 'uncategorized';
+            counts[catId] = (counts[catId] || 0) + 1;
+        }
+        return counts;
+    }, [products]);
 
     // Build a map of product_id -> offers and a flat list of product-specific offers
     const productOffers = useMemo(() => {
@@ -281,8 +352,50 @@ export default function PosIndex({ products, customers: initialCustomers, offers
         );
     };
 
+    const standalone = usePage().url.includes('standalone=1');
+
+    const handleClose = () => {
+        const backUrl = sessionStorage.getItem('pos_back_url') || '/dashboard';
+        sessionStorage.removeItem('pos_back_url');
+        router.visit(backUrl);
+    };
+
     const content = (
         <div className="flex flex-col h-full">
+            <Modal show={skuModalOpen} onClose={() => setSkuModalOpen(false)} maxWidth="sm" backdrop={false}>
+                <div className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Scan SKU</h3>
+                    <p className="text-sm text-gray-500 mb-4">Enter the product SKU to add it to cart.</p>
+                    <form onSubmit={(e) => { e.preventDefault(); handleSkuScan(); }}>
+                        <input
+                            type="text"
+                            value={skuInput}
+                            onChange={(e) => setSkuInput(e.target.value)}
+                            placeholder="Enter SKU..."
+                            autoFocus
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        {skuError && <p className="mt-2 text-sm text-red-600">{skuError}</p>}
+                        <div className="flex items-center gap-3 mt-4">
+                            <button
+                                type="submit"
+                                disabled={skuLoading || !skuInput.trim()}
+                                className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                            >
+                                {skuLoading ? 'Looking up…' : 'Add to Cart'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSkuModalOpen(false)}
+                                className="text-sm font-medium text-slate-600 hover:text-slate-900"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+
             {/* Main POS Layout */}
             <div className="flex flex-1 overflow-hidden">
                 {/* Products Area */}
@@ -301,9 +414,30 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                             />
                         </div>
                         <button
+                            onClick={() => { setSkuModalOpen(true); setSkuError(''); setSkuInput(''); }}
+                            className="p-2 rounded-lg hover:bg-gray-200 transition-colors shrink-0"
+                            title="Scan SKU"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gray-700">
+                                <path d="M2 4h2v16H2z" />
+                                <path d="M6 4h2v16H6z" />
+                                <path d="M10 4h1v16h-1z" />
+                                <path d="M14 4h1v16h-1z" />
+                                <path d="M18 4h2v16h-2z" />
+                                <path d="M22 4h0v16h0z" />
+                                <path d="M3 8h1" />
+                                <path d="M20 8h1" />
+                                <path d="M3 12h1" />
+                                <path d="M20 12h1" />
+                                <path d="M3 16h1" />
+                                <path d="M20 16h1" />
+                            </svg>
+                        </button>
+                        <button
                             onClick={() => setCartDrawerOpen(!cartDrawerOpen)}
                             className="relative p-2 rounded-lg hover:bg-gray-200 transition-colors shrink-0 flex items-center gap-1.5"
                             title={cartDrawerOpen ? 'Hide cart' : 'Show cart'}
+                            data-cart-target
                         >
                             <span className="text-lg">🛒</span>
                             <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full">
@@ -317,6 +451,15 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                         >
                             ⛶
                         </button>
+                        {usePage().url.includes('standalone=1') && (
+                            <button
+                                onClick={handleClose}
+                                className="p-2 rounded-lg hover:bg-red-100 transition-colors shrink-0 text-red-600 font-semibold text-sm"
+                                title="Close POS"
+                            >
+                                ✕ Close Terminal
+                            </button>
+                        )}
                     </div>
 
                     {/* Category Filter */}
@@ -330,7 +473,7 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                             >
-                                All
+                                All <span className="ml-1 opacity-70">({products.length})</span>
                             </button>
                             {categories.map(cat => (
                                 <button
@@ -342,7 +485,7 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
-                                    {cat.name}
+                                    {cat.name} <span className="ml-1 opacity-70">({categoryCounts[cat.id] || 0})</span>
                                 </button>
                             ))}
                         </div>
@@ -354,7 +497,7 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                             {filteredProducts.map(p => (
                                 <button
                                     key={p.id}
-                                    onClick={() => addToCart(p)}
+                                    onClick={(e) => addToCart(p, e)}
                                     className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-400 hover:-translate-y-0.5 transition-all group text-left overflow-hidden relative"
                                 >
                                     {productOffers[p.id] && (
@@ -400,10 +543,10 @@ export default function PosIndex({ products, customers: initialCustomers, offers
 
                 {/* Mini Cart (when drawer is closed) */}
                 {!cartDrawerOpen && (
-                    <div className="relative">
+                    <div className="relative flex flex-col items-center gap-2 mt-20">
                         <button
                             onClick={() => setCartDrawerOpen(true)}
-                            className="flex flex-col items-center gap-1 bg-gray-900 text-white px-2 py-4 border-l border-gray-700 rounded-l-xl shadow-lg hover:bg-gray-800 transition-colors h-fit mt-20"
+                            className="flex flex-col items-center gap-1 bg-gray-900 text-white px-2 py-4 border-l border-gray-700 rounded-l-xl shadow-lg hover:bg-gray-800 transition-colors"
                         >
                             <span className="text-xl">🛒</span>
                             <span className="text-xs font-bold bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
@@ -412,6 +555,14 @@ export default function PosIndex({ products, customers: initialCustomers, offers
                             <span className="text-[10px] font-semibold text-green-400 whitespace-nowrap">
                                 ₹{subtotal.toFixed(0)}
                             </span>
+                        </button>
+                        <button
+                            onClick={proceedToPayment}
+                            disabled={!selectedCustomer || cart.length === 0}
+                            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-[10px] font-bold px-2 py-2 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-green-600/20 whitespace-nowrap writing-mode-vertical"
+                            title="Proceed to Payment"
+                        >
+                            Pay →
                         </button>
                     </div>
                 )}
@@ -542,24 +693,9 @@ export default function PosIndex({ products, customers: initialCustomers, offers
         </div>
     );
 
-    const standalone = usePage().url.includes('standalone=1');
-
-    const handleClose = () => {
-        const backUrl = sessionStorage.getItem('pos_back_url') || '/dashboard';
-        sessionStorage.removeItem('pos_back_url');
-        router.visit(backUrl);
-    };
-
     if (standalone) {
         return (
             <div className="fixed inset-0 z-[9999] bg-gray-50 flex flex-col">
-                <button
-                    onClick={handleClose}
-                    className="absolute top-2 right-2 z-[10000] bg-gray-900/80 text-white text-xs px-2 py-1 rounded hover:bg-gray-900 transition-colors"
-                    title="Close POS"
-                >
-                    ✕ Close
-                </button>
                 <div className="flex-1 min-h-0">
                     {content}
                 </div>

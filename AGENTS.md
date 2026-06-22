@@ -29,14 +29,7 @@ All guests are redirected to `/pos/login` by default (see `bootstrap/app.php:red
 | `check.outlet` | `CheckOutletAccess` | Ensures user is authenticated (currently a pass-through) |
 | `active.user` | `EnsureUserIsActive` | Logs out disabled accounts |
 | `prevent.pos` | `PreventPosAccess` | Redirects POS agents away from admin CRUD routes |
-| `role` | `CheckRole` | Checks user has a specific role |
-| `permission` | `CheckPermission` | Checks user has a specific permission (skipped for `admin` role) |
 
-## Roles & Permissions
-- Custom RBAC: `roles`, `permissions`, `role_user`, `permission_role` tables.
-- `User::hasRole($slug)` / `User::hasPermission($slug)` methods.
-- Roles and permissions are **user-scoped** (`user_id` on roles/permissions).
-- `Gate::define('access-admin', fn($user) => $user->hasRole('admin'))` in AppServiceProvider.
 
 ## Outlet Scoping
 
@@ -94,7 +87,7 @@ Each user has one cart per outlet. Cart items calculate `subtotal = qty * unit_p
 
 ## Key Models & Relationships
 
-- **User**: `belongsTo(Outlet)`, `belongsToMany(Role)`, has `can_access_pos`, `is_active`, `outlet_id`
+- **User**: `belongsTo(Outlet)`, has `can_access_pos`, `is_active`, `outlet_id`
 - **Product**: `belongsTo(Outlet)`, `belongsTo(Category)`, fields: name, sku, price, stock, description, image, category_id
 - **Customer**: `belongsTo(Outlet)`, `hasMany(Order)`, fields: name, phone, email, address
 - **Order**: `belongsTo(User)`, `belongsTo(Outlet)`, `belongsTo(Customer)`, `belongsTo(Offer)`, `hasMany(OrderItem)`, fields: status, payment_method, payment_status, total_amount, discount_amount
@@ -102,8 +95,6 @@ Each user has one cart per outlet. Cart items calculate `subtotal = qty * unit_p
 - **Cart**: `belongsTo(User)`, `belongsTo(Outlet)`, `hasMany(CartItem)`
 - **CartItem**: `belongsTo(Cart)`, fields: product_id, quantity, unit_price, subtotal
 - **Offer**: `belongsTo(Outlet)`, `belongsTo(Product)` (optional), types: fixed, percentage
-- **Role**: `belongsToMany(User)`, `belongsToMany(Permission)`, user-scoped (`user_id`)
-- **Permission**: `belongsToMany(Role)`, user-scoped (`user_id`)
 - **Category**: `belongsTo(User)`, `hasMany(Product)`, user-scoped (`user_id`), fields: name, slug, description
 - **Outlet**: `hasMany(User)`, `hasMany(Product)`, `hasMany(Customer)`, `hasMany(Order)`
 
@@ -175,12 +166,12 @@ const handleDelete = (id) => {
 ```
 
 - Actions wrapper is always `<div className="space-x-3 flex justify-end">`
-- This pattern is used in: Customers, Products, Orders, Offers, Users, Outlets, Roles, Permissions, Categories
+- This pattern is used in: Customers, Products, Orders, Offers, Users, Outlets, Categories
 - **Always use this pattern** — never `window.confirm()` or inline delete without confirmation
 
 ### Search Filter Pattern (all index pages)
 
-All 9 index pages (Products, Customers, Orders, Users, Outlets, Offers, Categories, Roles, Permissions) use **debounced server-side search**:
+All 7 index pages (Products, Customers, Orders, Users, Outlets, Offers, Categories) use **debounced server-side search**:
 
 ```jsx
 const [search, setSearch] = useState(filters.search || '');
@@ -227,6 +218,27 @@ useEffect(() => {
 | `npm run dev` | Vite dev server only |
 | `composer test` | PHPUnit tests |
 | `npm run build` | Production frontend build |
+
+## New Components
+
+| Component | Location | Props | Purpose |
+|-----------|----------|-------|---------|
+| `Barcode` | `Components/Barcode.jsx` | `value`, `width`, `height`, `fontSize` | Renders CODE128 barcode SVG from a string value using JsBarcode library. Used in Products index to show barcodes from SKU. |
+
+## Barcode Feature
+
+- **Products Index** displays a barcode column rendered from `product.sku` via `Barcode` component (CODE128, small inline SVG).
+- **POS Terminal** has a 📷 "Scan SKU" button in the header bar (next to the cart toggle).
+- Clicking 📷 opens a modal (built with `Modal` component) with an SKU text input.
+- On submit, it first searches the loaded `products` array client-side for a matching SKU. If not found locally, it falls back to a JSON API endpoint.
+- The API endpoint `GET /products/find-by-sku/{sku}` (route `products.find-by-sku`) is in the shared route group and scoped by outlet for agents.
+- On success, the product is added to cart via `addToCart()` and the modal closes.
+
+## Routes Added
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/products/find-by-sku/{sku}` | JSON lookup by SKU, outlet-scoped |
 
 ## ⚠️ Agent Instructions — Required Updates
 

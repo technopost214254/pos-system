@@ -17,8 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('pos.login.create'));
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
-            'permission' => \App\Http\Middleware\CheckPermission::class,
             'check.outlet' => \App\Http\Middleware\CheckOutletAccess::class,
             'prevent.pos' => \App\Http\Middleware\PreventPosAccess::class,
             'active.user' => \App\Http\Middleware\EnsureUserIsActive::class,

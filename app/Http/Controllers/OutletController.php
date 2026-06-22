@@ -5,15 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Outlet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 
 class OutletController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
+        $outletId = $user->outlet_id;
         $search = $request->input('search');
 
-        $outlets = Outlet::where('user_id', Auth::id())
+        $outlets = Outlet::when($outletId, fn($q) => $q->where('id', $outletId))
             ->when($search, fn($q) => $q->where(function ($q2) use ($search) {
                 $q2->where('name', 'like', "%{$search}%")
                    ->orWhere('address', 'like', "%{$search}%")
@@ -76,7 +79,11 @@ class OutletController extends Controller
 
     public function destroy(Outlet $outlet)
     {
-        $outlet->delete();
+        try {
+            $outlet->delete();
+        } catch (QueryException $e) {
+            return redirect()->route('outlets.index')->with('error', 'Cannot delete this outlet because it has associated users, products, or orders. Disable it instead.');
+        }
 
         return redirect()->route('outlets.index')->with('success', 'Outlet deleted successfully.');
     }

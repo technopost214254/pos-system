@@ -9,8 +9,6 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OutletController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -40,9 +38,11 @@ Route::middleware('auth:pos')->group(function () {
 
         // Shared — both admins and POS agents (data is outlet-scoped per user)
         Route::get('/customers/search/list', [CustomerController::class, 'search'])->name('customers.search');
+        Route::get('/products/find-by-sku/{sku}', [ProductController::class, 'findBySku'])->name('products.find-by-sku');
         Route::resource('customers', CustomerController::class);
         Route::resource('orders', OrderController::class)->except(['create','store','edit']);
         Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+        Route::get('/invoices', [OrderController::class, 'invoices'])->name('invoices');
         Route::get('/offers/available/list', [OfferController::class, 'getAvailableOffers'])->name('offers.available');
 
         Route::prefix('cart')->name('cart.')->group(function () {
@@ -60,11 +60,7 @@ Route::middleware('auth:pos')->group(function () {
             Route::patch('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
             Route::resource('outlets', OutletController::class)->except(['show']);
             Route::resource('offers', OfferController::class)->except(['show']);
-            Route::resource('roles', RoleController::class)->except(['show']);
-            Route::resource('permissions', PermissionController::class)->except(['show']);
             Route::resource('categories', CategoryController::class)->except(['show']);
         });
     });
 });
-
-require __DIR__.'/auth.php';
