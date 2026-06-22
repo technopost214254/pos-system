@@ -3,10 +3,25 @@ import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function Index({ orders }) {
+export default function Index({ orders, filters = {} }) {
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const debounceRef = useRef(null);
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            router.get('/orders', { search }, { preserveState: true, replace: true });
+        }, 400);
+        return () => clearTimeout(debounceRef.current);
+    }, [search]);
     const isAdmin = usePage().props.auth?.is_admin;
 
     const handleDelete = (id) => {
@@ -45,6 +60,9 @@ export default function Index({ orders }) {
             <PageHeader
                 title="Orders"
                 description="View and manage all orders"
+                search={search}
+                onSearch={setSearch}
+                searchPlaceholder="Search by order # or customer..."
             />
 
             <DataTable

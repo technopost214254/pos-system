@@ -11,14 +11,23 @@ class CustomerController extends Controller
 {
     public function index(Request $request) {
         $outletId = $request->user()->outlet_id;
+        $search = $request->input('search');
 
         $query = Customer::query();
         if ($outletId) {
             $query->where('outlet_id', $outletId);
         }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
 
         return Inertia::render('Customer/Index', [
-            'customers' => $query->with('outlet')->latest()->paginate(10)
+            'customers' => $query->with('outlet')->latest()->paginate(10),
+            'filters' => ['search' => $search],
         ]);
     }
 

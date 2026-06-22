@@ -2,10 +2,25 @@ import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function Index({ users }) {
+export default function Index({ users, filters = {} }) {
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const debounceRef = useRef(null);
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            router.get('/users', { search }, { preserveState: true, replace: true });
+        }, 400);
+        return () => clearTimeout(debounceRef.current);
+    }, [search]);
 
     const handleDelete = (id) => {
         if (confirmDelete === id) {
@@ -81,6 +96,9 @@ export default function Index({ users }) {
             <PageHeader
                 title="Users"
                 description="Manage staff accounts and POS access"
+                search={search}
+                onSearch={setSearch}
+                searchPlaceholder="Search by name or email..."
                 actionLabel="+ Add User"
                 actionHref="/users/create"
             />

@@ -11,14 +11,17 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        $search = $request->input('search');
 
         $categories = Category::withCount('products')
             ->when($user->can_access_pos, fn($q) => $q->where('user_id', $user->id))
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->latest()
             ->paginate(15);
 
         return Inertia::render('Categories/Index', [
             'categories' => $categories,
+            'filters' => ['search' => $search],
         ]);
     }
 

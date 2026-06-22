@@ -137,7 +137,7 @@ export default function CustomerSelect({ customers, selectedCustomer, onSelectCu
                                                         selectedCustomer?.id === customer.id ? 'bg-blue-100' : ''
                                                     }`}
                                                 >
-                                                    <div className="font-semibold">{customer.name}</div>
+                                                    <div className="font-semibold text-gray-900">{customer.name}</div>
                                                     <div className="text-sm text-gray-500">{customer.phone}</div>
                                                 </button>
                                             ))}

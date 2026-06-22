@@ -9,13 +9,22 @@ use Inertia\Inertia;
 
 class PermissionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $permissions = Permission::where('user_id', Auth::id())
+            ->when($search, fn($q) => $q->where(function ($q2) use ($search) {
+                $q2->where('name', 'like', "%{$search}%")
+                   ->orWhere('slug', 'like', "%{$search}%");
+            }))
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('Permissions/Index', compact('permissions'));
+        return Inertia::render('Permissions/Index', [
+            'permissions' => $permissions,
+            'filters' => ['search' => $search],
+        ]);
     }
 
     public function create()

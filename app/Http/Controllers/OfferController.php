@@ -13,6 +13,7 @@ class OfferController extends Controller
     public function index(Request $request) {
         $user = $request->user();
         $outletId = $user->outlet_id;
+        $search = $request->input('search');
 
         $query = Offer::where('user_id', $user->id);
         if ($outletId) {
@@ -22,9 +23,16 @@ class OfferController extends Controller
                 });
             });
         }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%");
+            });
+        }
 
         return Inertia::render('Offers/Index', [
-            'offers' => $query->with('product')->paginate(15)
+            'offers' => $query->with('product')->paginate(15),
+            'filters' => ['search' => $search],
         ]);
     }
 

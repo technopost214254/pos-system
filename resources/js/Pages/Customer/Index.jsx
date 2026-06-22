@@ -2,10 +2,25 @@ import { Link, router, usePage, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function CustomerIndex({ customers }) {
+export default function CustomerIndex({ customers, filters = {} }) {
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const debounceRef = useRef(null);
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            router.get('/customers', { search }, { preserveState: true, replace: true });
+        }, 400);
+        return () => clearTimeout(debounceRef.current);
+    }, [search]);
     const isAdmin = usePage().props.auth?.is_admin;
 
     const handleDelete = (customerId) => {
@@ -59,6 +74,9 @@ export default function CustomerIndex({ customers }) {
             <PageHeader
                 title="Customers"
                 description="Manage your customer database"
+                search={search}
+                onSearch={setSearch}
+                searchPlaceholder="Search by name, phone or email..."
                 actionLabel="+ Add Customer"
                 actionHref="/customers/create"
             />

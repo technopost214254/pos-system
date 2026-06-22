@@ -1,9 +1,8 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 const adminNav = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/pos', label: 'POS Terminal', icon: '🛒' },
     { href: '/categories', label: 'Categories', icon: '📂' },
     { href: '/products', label: 'Products', icon: '📦' },
     { href: '/customers', label: 'Customers', icon: '👥' },
@@ -16,7 +15,6 @@ const adminNav = [
 // POS agents are restricted to the terminal and their outlet's orders/customers.
 const agentNav = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/pos', label: 'POS Terminal', icon: '🛒' },
     { href: '/orders', label: 'Orders', icon: '📋' },
     { href: '/customers', label: 'Customers', icon: '👥' },
 ];
@@ -33,10 +31,10 @@ export default function AppLayout({ children }) {
     const initials = (auth?.user?.name || '?').trim().charAt(0).toUpperCase();
 
     return (
-        <div className="min-h-screen bg-slate-50 flex">
+        <div className="h-screen bg-slate-50 flex overflow-hidden">
             {/* Sidebar */}
-            <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-slate-900 to-slate-800 text-white transition-all duration-300 shadow-xl flex flex-col`}>
-                <div className="p-4 border-b border-slate-700/60 flex items-center justify-between">
+            <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-slate-900 to-slate-800 text-white transition-all duration-300 shadow-xl flex flex-col shrink-0`}>
+                <div className="p-4 border-b border-slate-700/60 flex items-center justify-between shrink-0">
                     {sidebarOpen && (
                         <div className="flex items-center gap-2">
                             <span className="text-xl">🛒</span>
@@ -55,7 +53,7 @@ export default function AppLayout({ children }) {
                     </button>
                 </div>
 
-                <nav className="p-3 space-y-1 flex-1">
+                <nav className="p-3 space-y-1 flex-1 overflow-y-auto">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
@@ -74,7 +72,7 @@ export default function AppLayout({ children }) {
                 </nav>
 
                 {sidebarOpen && (
-                    <div className="p-4 text-[11px] text-slate-500 border-t border-slate-700/60">
+                    <div className="p-4 text-[11px] text-slate-500 border-t border-slate-700/60 shrink-0">
                         &copy; {new Date().getFullYear()} POS System
                     </div>
                 )}
@@ -83,25 +81,39 @@ export default function AppLayout({ children }) {
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Top Header */}
-                <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
-                    <div className="flex items-center justify-end px-8 py-3 gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-semibold">
-                                {initials}
-                            </div>
-                            <div className="leading-tight text-right hidden sm:block">
-                                <div className="text-sm font-medium text-slate-800">{auth?.user?.name}</div>
-                                <div className="text-xs text-slate-500">{auth?.user?.email}</div>
-                            </div>
-                        </div>
-                        <Link
-                            href="/pos/logout"
-                            method="post"
-                            as="button"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10 shrink-0">
+                    <div className="flex items-center justify-between px-8 py-3 gap-4">
+                        <span
+                            onClick={() => {
+                                sessionStorage.setItem('pos_back_url', window.location.pathname + window.location.search);
+                                router.visit('/pos?standalone=1');
+                            }}
+                            className="flex items-center gap-3 cursor-pointer text-sm font-semibold text-black hover:text-indigo-700 transition-colors hover:underline"
                         >
-                            <span>⎋</span> Logout
-                        </Link>
+                            <span className="text-lg">🛒</span>
+                            POS Terminal
+                        </span>
+
+                        <div className="flex items-center gap-4">
+                             <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-semibold">
+                                    {initials}
+                                </div>
+                                <div className="leading-tight text-right hidden sm:block">
+                                    <div className="text-sm font-medium text-slate-800">{auth?.user?.name}</div>
+                                    <div className="text-xs text-slate-500">{auth?.user?.email}</div>
+                                </div>
+                            </div>
+
+                            <Link
+                                href="/pos/logout"
+                                method="post"
+                                as="button"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                                <span>⎋</span> Logout
+                            </Link>
+                        </div>
                     </div>
                 </header>
 

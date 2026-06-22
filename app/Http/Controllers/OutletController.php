@@ -9,13 +9,23 @@ use Inertia\Inertia;
 
 class OutletController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $outlets = Outlet::where('user_id', Auth::id())
+            ->when($search, fn($q) => $q->where(function ($q2) use ($search) {
+                $q2->where('name', 'like', "%{$search}%")
+                   ->orWhere('address', 'like', "%{$search}%")
+                   ->orWhere('phone', 'like', "%{$search}%");
+            }))
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('Outlets/Index', compact('outlets'));
+        return Inertia::render('Outlets/Index', [
+            'outlets' => $outlets,
+            'filters' => ['search' => $search],
+        ]);
     }
 
     public function create()

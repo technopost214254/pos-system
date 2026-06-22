@@ -11,14 +11,20 @@ use Inertia\Inertia;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $roles = Role::where('user_id', Auth::id())
             ->with('permissions')
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('Roles/Index', compact('roles'));
+        return Inertia::render('Roles/Index', [
+            'roles' => $roles,
+            'filters' => ['search' => $search],
+        ]);
     }
 
     public function create()

@@ -53,7 +53,7 @@ All data is scoped by `outlet_id`:
 /dashboard                          → Stats overview
 /pos                                → POS terminal
 /payment                            → Payment confirmation page
-/orders/place (POST)                → Dispatches ProcessOrderJob
+/orders/place (POST)                → Creates order synchronously, redirects to invoice with ?print=1
 /customers/*                        → Customer CRUD + search API
 /orders/*                           → Order view/manage (no create/store/edit)
 /orders/{id}/invoice                → Printable invoice
@@ -85,12 +85,12 @@ Each user has one cart per outlet. Cart items calculate `subtotal = qty * unit_p
 3. **Offer selection** — Discounts calculated client-side (fixed, percentage).
 4. **Proceed to Payment** — Data stored in `sessionStorage`, redirects to `/payment`.
 5. **Payment page** (`Payment/Index.jsx`) — Review order, confirm.
-6. **Order placement** (`POST /orders/place`) — Dispatches `ProcessOrderJob` to queue.
-7. **ProcessOrderJob** — Creates order + order items, decrements stock in a DB transaction.
+6. **Order placement** (`POST /orders/place`) — Creates order + order items + decrements stock synchronously in a DB transaction. Redirects to `/orders/{id}/invoice?print=1`.
+7. **Invoice page** (`Orders/Invoice.jsx`) — Auto-opens print dialog. Shows "Print" and "Skip" buttons. "Skip" redirects back to `/pos?standalone=1`. Invoice layout is A5-responsive with `@page { size: A5 }` CSS. Supports standalone mode (no sidebar, dark header) via `?standalone=1`.
 
 ### Order statuses
-- `pending` → default on creation
-- `completed` / `cancelled` — updated manually via order show page
+- `completed` → default on creation (POS orders are paid at counter)
+- `pending` / `cancelled` — updated manually via order show page
 
 ## Key Models & Relationships
 
@@ -113,7 +113,7 @@ Each user has one cart per outlet. Cart items calculate `subtotal = qty * unit_p
 |-----------|----------|-------|
 | `AppLayout` | `Layouts/AppLayout.jsx` | Sidebar nav (admin vs agent), top header, flash messages |
 | `DataTable` | `Components/DataTable.jsx` | `columns`, `data`, `actions`, `links` (pagination) |
-| `PageHeader` | `Components/PageHeader.jsx` | `title`, `description`, `actionLabel`, `actionHref` |
+| `PageHeader` | `Components/PageHeader.jsx` | `title`, `description`, `actionLabel`, `actionHref`, `search`, `onSearch`, `searchPlaceholder` |
 | `Card` | `Components/Card.jsx` | `title`, `footer`, `className` |
 | `FormField` | `Components/FormField.jsx` | `label`, `error`, `type`, wraps TextInput |
 | `Modal` | `Components/Modal.jsx` | `show`, `maxWidth`, `onClose`, wraps HeadlessUI Dialog |
@@ -124,13 +124,17 @@ Each user has one cart per outlet. Cart items calculate `subtotal = qty * unit_p
 
 ## POS Terminal (`Pos/Index.jsx`)
 
+- **Sidebar nav removed** — POS Terminal is accessed via a button in the AppLayout header (top bar), not from the sidebar.
+- **Standalone mode**: When opened from header, `?standalone=1` query param triggers a full-viewport POS without sidebar/AppLayout. A "Close ✕" button in the top bar navigates back to the previous page via `sessionStorage('pos_back_url')`.
 - Full-screen mode supported via the Fullscreen API (`requestFullscreen` / `exitFullscreen`).
 - When fullscreen, the component renders in a `fixed inset-0 z-[9999]` wrapper that overlays the entire app (including sidebar).
-- When not fullscreen, it renders inside `AppLayout` using negative margins to fill the content area (`h-[calc(100vh-100px)] -mx-8 -mb-8`).
+- When not fullscreen (and not standalone), it renders inside `AppLayout` using negative margins to fill the content area (`h-[calc(100vh-100px)] -mx-8 -mb-8`).
 - Real-time clock updates every 30 seconds.
 - Product search filters by name and SKU.
 - **Category filter**: Row of pill buttons (All, plus each category) above the product grid. Products are filtered client-side by `category_id`. Categories are passed via Inertia from `PosController`.
 - Cart syncs with the server (AJAX) but also uses `sessionStorage` for persistence between POS → Payment flow.
+- **Toggleable cart drawer**: Cart sidebar can be collapsed to a mini-cart tab (right edge) showing item count and total. Toggle via the cart button in the search bar or the ✕ close button on the drawer.
+- **Payment standalone mode**: When proceeding from POS, `?standalone=1` is passed to `/payment`. The payment page detects this via `usePage().url` and renders as a full-viewport standalone page (dark header bar, no sidebar), matching the POS terminal aesthetic.
 
 ## Frontend Patterns
 
@@ -174,6 +178,35 @@ const handleDelete = (id) => {
 - This pattern is used in: Customers, Products, Orders, Offers, Users, Outlets, Roles, Permissions, Categories
 - **Always use this pattern** — never `window.confirm()` or inline delete without confirmation
 
+### Search Filter Pattern (all index pages)
+
+All 9 index pages (Products, Customers, Orders, Users, Outlets, Offers, Categories, Roles, Permissions) use **debounced server-side search**:
+
+```jsx
+const [search, setSearch] = useState(filters.search || '');
+const debounceRef = useRef(null);
+const mounted = useRef(false);
+
+useEffect(() => {
+    if (!mounted.current) {
+        mounted.current = true;
+        return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+        router.get('/resource', { search }, { preserveState: true, replace: true });
+    }, 400);
+    return () => clearTimeout(debounceRef.current);
+}, [search]);
+```
+
+- `PageHeader` renders the search input when `onSearch` is provided
+- Controllers read `$request->input('search')` and apply `LIKE` filters
+- `filters.search` is passed back to the component for initialization
+- `preserveState: true` keeps local React state intact across navigation
+- `replace: true` avoids polluting browser history
+- `mounted` ref **skips the initial mount** to prevent the effect from overriding pagination clicks or adding unnecessary `?search=` to the URL
+
 ## Offer Types
 
 | Type | Calculation |
@@ -182,8 +215,9 @@ const handleDelete = (id) => {
 | `percentage` | `subtotal * value / 100` |
 
 ## Queue
-- Orders processed via `ProcessOrderJob` (implements `ShouldQueue`).
-- Needs `php artisan queue:listen` running (included in `composer dev`).
+- Orders are now created synchronously (no longer dispatched to queue).
+- `ProcessOrderJob` is retained but no longer used.
+- `php artisan queue:listen` is no longer required for order processing.
 
 ## Dev Commands
 

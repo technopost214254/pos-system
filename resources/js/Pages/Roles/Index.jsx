@@ -2,10 +2,25 @@ import { Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function Index({ roles }) {
+export default function Index({ roles, filters = {} }) {
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const debounceRef = useRef(null);
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            router.get('/roles', { search }, { preserveState: true, replace: true });
+        }, 400);
+        return () => clearTimeout(debounceRef.current);
+    }, [search]);
 
     const handleDelete = (id) => {
         if (confirmDelete === id) {
@@ -51,6 +66,9 @@ export default function Index({ roles }) {
             <PageHeader
                 title="Roles"
                 description="Manage roles and permissions"
+                search={search}
+                onSearch={setSearch}
+                searchPlaceholder="Search roles..."
                 actionLabel="+ Add Role"
                 actionHref="/roles/create"
             />

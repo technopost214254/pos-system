@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import CustomerSelect from '@/Components/CustomerSelect';
@@ -164,7 +164,7 @@ export default function PosIndex({ products, customers: initialCustomers, offers
     const proceedToPayment = () => {
         if (!cart.length) return alert('Cart is empty!');
         if (!selectedCustomer) return alert('Please select a customer!');
-        router.get('/payment', {}, {
+        router.get('/payment', { standalone: 1 }, {
             onBefore: () => {
                 sessionStorage.setItem('pos_cart', JSON.stringify(cart));
                 sessionStorage.setItem('pos_customer', JSON.stringify(selectedCustomer));
@@ -542,6 +542,31 @@ export default function PosIndex({ products, customers: initialCustomers, offers
         </div>
     );
 
+    const standalone = usePage().url.includes('standalone=1');
+
+    const handleClose = () => {
+        const backUrl = sessionStorage.getItem('pos_back_url') || '/dashboard';
+        sessionStorage.removeItem('pos_back_url');
+        router.visit(backUrl);
+    };
+
+    if (standalone) {
+        return (
+            <div className="fixed inset-0 z-[9999] bg-gray-50 flex flex-col">
+                <button
+                    onClick={handleClose}
+                    className="absolute top-2 right-2 z-[10000] bg-gray-900/80 text-white text-xs px-2 py-1 rounded hover:bg-gray-900 transition-colors"
+                    title="Close POS"
+                >
+                    ✕ Close
+                </button>
+                <div className="flex-1 min-h-0">
+                    {content}
+                </div>
+            </div>
+        );
+    }
+
     if (fullscreen) {
         return (
             <div className="fixed inset-0 z-[9999] bg-gray-50 flex flex-col">
@@ -553,11 +578,8 @@ export default function PosIndex({ products, customers: initialCustomers, offers
     return (
         <AppLayout>
             <Head title="Point of Sale" />
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Point of Sale</h1>
-                <p className="mt-1 text-gray-600">Select products and process orders</p>
-            </div>
-            <div className="h-[calc(100vh-190px)] -mx-8 -mb-8">
+            
+            <div className="h-[calc(100vh-90px)] -mx-8 -mb-8">
                 {content}
             </div>
         </AppLayout>

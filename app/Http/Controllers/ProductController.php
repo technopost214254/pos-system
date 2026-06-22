@@ -14,14 +14,22 @@ class ProductController extends Controller
     public function index(Request $request) {
         $user = $request->user();
         $outletId = $user->outlet_id;
+        $search = $request->input('search');
 
         $query = Product::query();
         if ($outletId) {
             $query->where('outlet_id', $outletId);
         }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
 
         return Inertia::render('Products/Index', [
-            'products' => $query->with(['outlet', 'category'])->latest()->paginate(10)
+            'products' => $query->with(['outlet', 'category'])->latest()->paginate(10),
+            'filters' => ['search' => $search],
         ]);
     }
 

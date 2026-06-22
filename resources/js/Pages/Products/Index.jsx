@@ -2,10 +2,25 @@ import { Link, router, usePage, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import PageHeader from '@/Components/PageHeader';
 import DataTable from '@/Components/DataTable';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function Index({ products }) {
+export default function Index({ products, filters = {} }) {
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const debounceRef = useRef(null);
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            router.get('/products', { search }, { preserveState: true, replace: true });
+        }, 400);
+        return () => clearTimeout(debounceRef.current);
+    }, [search]);
     const isAdmin = usePage().props.auth?.is_admin;
 
     const handleDelete = (id) => {
@@ -54,6 +69,9 @@ export default function Index({ products }) {
             <PageHeader
                 title="Products"
                 description="Manage your product inventory"
+                search={search}
+                onSearch={setSearch}
+                searchPlaceholder="Search by name or SKU..."
                 actionLabel="+ Add Product"
                 actionHref="/products/create"
             />

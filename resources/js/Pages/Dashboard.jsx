@@ -12,11 +12,12 @@ const agentFeatures = [
     { href: '/pos', label: 'POS Terminal', desc: 'Start a new sale', icon: '🛒' },
     { href: '/orders', label: 'Orders', desc: 'View your orders', icon: '📋' },
     { href: '/customers', label: 'Customers', desc: 'Your outlet customers', icon: '👥' },
+    { href: '/offers', label: 'Offers', desc: 'View available offers', icon: '🎁' },
 ];
 
 const adminFeatures = [
-    { href: '/pos', label: 'POS Terminal', desc: 'Start a new sale', icon: '🛒' },
     { href: '/products', label: 'Products', desc: 'Manage inventory', icon: '📦' },
+    { href: '/categories', label: 'Categories', desc: 'View categories analytics', icon: '📊' },
     { href: '/customers', label: 'Customers', desc: 'Manage customers', icon: '👥' },
     { href: '/orders', label: 'Orders', desc: 'View all orders', icon: '📋' },
     { href: '/users', label: 'Users', desc: 'Manage staff accounts', icon: '👤' },
