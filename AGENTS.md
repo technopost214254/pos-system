@@ -19,6 +19,8 @@ All guests are redirected to `/pos/login` by default (see `bootstrap/app.php:red
 - **`pos` guard** checks `is_active` on login (PosLoginController) and via `EnsureUserIsActive` middleware on every request.
 - Users with `can_access_pos = true` are "POS agents" — blocked from admin routes by `PreventPosAccess` middleware.
 - Users with `can_access_pos = false` (admins) have full access.
+- The login page (`Auth/PosLogin.jsx`) displays the demo admin credentials (`admin@example.com` / `admin123`) and prefills the form; a "Fill" button resets them. Keep this in sync with the seeder.
+- Only the `/pos/login` routes exist — there is no `/login` route. Frontend links use root-absolute paths (`/dashboard`, `/pos/login`), so the app must be served with `public/` as the document root (e.g. `php artisan serve`); serving from a subdirectory breaks Inertia navigation.
 
 ## Middleware (applied in order)
 

@@ -1,11 +1,19 @@
 import { Head, useForm } from '@inertiajs/react';
 
 export default function PosLogin({ status }) {
+    const adminEmail = 'admin@example.com';
+    const adminPassword = 'admin123';
+
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
-        password: '',
+        email: adminEmail,
+        password: adminPassword,
         remember: false,
     });
+
+    const fillCredentials = () => {
+        setData('email', adminEmail);
+        setData('password', adminPassword);
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -33,6 +41,25 @@ export default function PosLogin({ status }) {
                             {status}
                         </div>
                     )}
+
+                    <div className="mb-5 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm">
+                        <div className="flex items-center justify-between">
+                            <p className="font-semibold text-indigo-900">Admin login details</p>
+                            <button
+                                type="button"
+                                onClick={fillCredentials}
+                                className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline"
+                            >
+                                Fill
+                            </button>
+                        </div>
+                        <p className="mt-1 text-indigo-700">
+                            Email: <span className="font-mono font-medium">{adminEmail}</span>
+                        </p>
+                        <p className="text-indigo-700">
+                            Password: <span className="font-mono font-medium">{adminPassword}</span>
+                        </p>
+                    </div>
 
                     <form onSubmit={submit} className="space-y-5">
                         <div>
